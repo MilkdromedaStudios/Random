@@ -1,7 +1,5 @@
 # Random - AI-Powered Web Experience Generator
 
-> Discover something completely new every time you refresh. One moment it's generative art, the next a mini-game, then a quirky utility — all powered by AI and delivered in a single HTML file.
-
 **Live Demo:** [random.krishnasingh.live](https://random.krishnasingh.live)
 
 ## What Is This?
