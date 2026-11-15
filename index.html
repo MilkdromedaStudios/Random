@@ -385,46 +385,26 @@ Your mission is to generate a completely unique, self-contained HTML file that s
                 apiKeyContainer.style.display = 'flex';
 
                 saveApiKeyBtn.addEventListener('click', async () => {
-                    const key = apiKeyInput.value.trim();
+                    const key = apiKeyInput.value;
                     if (!key) {
                         apiKeyError.textContent = 'Please enter an API key.';
                         return;
                     }
 
-                    saveApiKeyBtn.textContent = 'Validating...';
-                    saveApiKeyBtn.disabled = true;
+                    // Save exactly what the user entered. The first real request
+                    // will report authentication or API errors if the key fails.
+                    localStorage.setItem('geminiApiKey', key);
                     apiKeyError.textContent = '';
-
-                    const isValid = await validateApiKey(key);
-
-                    if (isValid) {
-                        localStorage.setItem('geminiApiKey', key);
-                        location.reload();
-                    } else {
-                        apiKeyError.textContent = 'Invalid API key. Please check and try again.';
-                        saveApiKeyBtn.textContent = 'Save & Continue';
-                        saveApiKeyBtn.disabled = false;
-                    }
+                    saveApiKeyBtn.textContent = 'Starting...';
+                    saveApiKeyBtn.disabled = true;
+                    apiKeyContainer.style.display = 'none';
+                    loadingContent.style.display = 'flex';
+                    generatePage(key);
                 });
             }
 
-            async function validateApiKey(keyToTest) {
-                const VALIDATION_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${keyToTest}`;
-                try {
-                    const response = await fetch(VALIDATION_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: "hello" }] }] })
-                    });
-                    return response.ok;
-                } catch (error) {
-                    console.error('Validation request failed:', error);
-                    return false;
-                }
-            }
-
             async function generatePage(apiKey) {
-                const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+                const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`;
 
                 try {
                     const payload = { contents: [{ parts: [{ text: PROMPT.trim() }] }] };
@@ -434,20 +414,11 @@ Your mission is to generate a completely unique, self-contained HTML file that s
                         body: JSON.stringify(payload)
                     });
 
+                    const data = await response.json().catch(() => ({}));
                     if (!response.ok) {
-                        if (response.status === 400 || response.status === 403) {
-                            localStorage.removeItem('geminiApiKey');
-                            loadingContent.style.display = 'none';
-                            generalErrorMessage.textContent = 'Your API Key is invalid or expired. Please enter it again.';
-                            generalErrorMessage.style.display = 'block';
-                            setTimeout(() => location.reload(), 3000);
-                            return;
-                        }
-                        const errorData = await response.json();
-                        throw new Error(errorData?.error?.message || `HTTP error! Status: ${response.status}`);
+                        const apiMessage = data?.error?.message || data?.message || 'No details were provided by the API.';
+                        throw new Error(`Gemini API error (HTTP ${response.status}): ${apiMessage}`);
                     }
-
-                    const data = await response.json();
                     let htmlContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
                     if (!htmlContent) {
