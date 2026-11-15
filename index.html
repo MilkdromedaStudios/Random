@@ -1,453 +1,110 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1020"><title>Random</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}html,body{margin:0;min-height:100%}body{background:#0b1020;color:#edf2ff;font-family:Inter,system-ui,sans-serif}
+#start{min-height:100vh;display:grid;place-items:center;text-align:center;padding:30px 24px 120px}
+#start h1{font-size:clamp(3rem,9vw,6rem);letter-spacing:-.075em;margin:0 0 12px}#start p{max-width:540px;color:#9eacc7;line-height:1.7}
+#random-ai-bar{position:fixed!important;z-index:2147483647!important;left:50%!important;bottom:20px!important;transform:translateX(-50%)!important;width:min(760px,calc(100vw - 28px))!important;display:flex!important;gap:9px!important;align-items:center!important;padding:10px!important;border:1px solid rgba(180,200,255,.2)!important;border-radius:18px!important;background:rgba(10,16,32,.9)!important;box-shadow:0 12px 50px #0006!important;backdrop-filter:blur(22px)!important;color:#eef3ff!important;font:500 14px Inter,system-ui,sans-serif!important}
+#random-ai-bar input{flex:1!important;min-width:0!important;border:0!important;outline:0!important;background:transparent!important;color:inherit!important;font:inherit!important;padding:12px 10px!important}
+#random-ai-bar input::placeholder{color:#9aa8c2!important}#random-ai-bar button{border:0!important;border-radius:12px!important;padding:11px 17px!important;background:#a8c7ff!important;color:#101a31!important;font:700 13px Inter,system-ui,sans-serif!important;cursor:pointer!important}#random-ai-bar button:disabled{opacity:.55!important;cursor:wait!important}
+#random-ai-status{position:fixed!important;z-index:2147483646!important;left:50%!important;bottom:89px!important;transform:translateX(-50%)!important;max-width:calc(100vw - 28px)!important;padding:8px 13px!important;border:1px solid #b4c8ff26!important;border-radius:10px!important;background:#0a1020e8!important;color:#d5e0f5!important;font:12px Inter,system-ui,sans-serif!important;text-align:center!important}
+#random-ai-status:empty{display:none!important}#random-ai-status.error{color:#ffaaaa!important}
+@media(max-width:520px){#random-ai-bar{bottom:12px!important;gap:5px!important}#random-ai-bar button{padding:11px 13px!important}}
+</style></head><body>
+<main id="start"><div><h1>Random.</h1><p>Create a completely new web experience, then use the bar at the bottom to change anything on the page. Your page is saved in this browser.</p></div></main>
+<div id="random-ai-status" role="status" aria-live="polite"></div>
+<form id="random-ai-bar"><input id="random-ai-input" autocomplete="off" placeholder="Describe what you want to create…" aria-label="Describe a page or change"><button id="random-ai-submit" type="submit">Generate</button></form>
+<script>
+(function(){
+'use strict';
+var MODEL='gemini-3.5-flash-lite',KEY_SLOT='geminiApiKey',PAGE_SLOT='randomGeneratedHtml';
+var form=document.getElementById('random-ai-bar'),input=document.getElementById('random-ai-input'),button=document.getElementById('random-ai-submit'),status=document.getElementById('random-ai-status');
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Random</title>
+function pageRuntime(){
+  'use strict';
+  var KEY_SLOT='geminiApiKey',PAGE_SLOT='randomGeneratedHtml',MODEL='gemini-3.5-flash-lite';
+  var form=document.getElementById('random-ai-bar'),input=document.getElementById('random-ai-input'),button=document.getElementById('random-ai-submit'),status=document.getElementById('random-ai-status');
+  if(!form||!input||!button||!status)return;
+  function show(message,error){status.textContent=message||'';status.classList.toggle('error',!!error);}
+  function currentHtml(){
+    var clone=document.documentElement.cloneNode(true);
+    ['random-ai-bar','random-ai-status','random-ai-style','random-ai-runtime'].forEach(function(id){var el=clone.querySelector('#'+id);if(el)el.remove();});
+    return '<!doctype html>\\n'+clone.outerHTML;
+  }
+  function installPage(html){
+    var bar='<div id="random-ai-status" role="status" aria-live="polite"></div><form id="random-ai-bar"><input id="random-ai-input" autocomplete="off" placeholder="Describe anything you want to change…" aria-label="Describe a change"><button id="random-ai-submit" type="submit">Update</button></form>';
+    var style='<style id="random-ai-style">#random-ai-bar{position:fixed!important;z-index:2147483647!important;left:50%!important;bottom:20px!important;transform:translateX(-50%)!important;width:min(760px,calc(100vw - 28px))!important;display:flex!important;gap:9px!important;align-items:center!important;padding:10px!important;border:1px solid rgba(180,200,255,.2)!important;border-radius:18px!important;background:rgba(10,16,32,.91)!important;box-shadow:0 12px 50px #0006!important;backdrop-filter:blur(22px)!important;color:#eef3ff!important;font:500 14px Inter,system-ui,sans-serif!important}#random-ai-bar input{flex:1!important;min-width:0!important;border:0!important;outline:0!important;background:transparent!important;color:inherit!important;font:inherit!important;padding:12px 10px!important}#random-ai-bar input::placeholder{color:#aab5ca!important}#random-ai-bar button{border:0!important;border-radius:12px!important;padding:11px 17px!important;background:#a8c7ff!important;color:#101a31!important;font:700 13px Inter,system-ui,sans-serif!important;cursor:pointer!important}#random-ai-bar button:disabled{opacity:.55!important;cursor:wait!important}#random-ai-status{position:fixed!important;z-index:2147483646!important;left:50%!important;bottom:89px!important;transform:translateX(-50%)!important;max-width:calc(100vw - 28px)!important;padding:8px 13px!important;border:1px solid #b4c8ff26!important;border-radius:10px!important;background:#0a1020e8!important;color:#d5e0f5!important;font:12px Inter,system-ui,sans-serif!important;text-align:center!important}#random-ai-status:empty{display:none!important}#random-ai-status.error{color:#ffaaaa!important}@media(max-width:520px){#random-ai-bar{bottom:12px!important;gap:5px!important}#random-ai-bar button{padding:11px 13px!important}}body{padding-bottom:90px!important}</style>';
+    var output=html.trim();
+    if(/<\\/body\\s*>/i.test(output))output=output.replace(/<\\/body\\s*>/i,bar+style+'</body>');
+    else output+=bar+style;
+    var runtimeTag='<script id="random-ai-runtime">('+pageRuntime.toString()+')();<'+'/script>';
+    if(/<\\/html\\s*>/i.test(output))output=output.replace(/<\\/html\\s*>/i,runtimeTag+'</html>');
+    else output+=runtimeTag;
+    localStorage.setItem(PAGE_SLOT,html.trim());
+    document.open();document.write(output);document.close();
+  }
+  async function ask(prompt,existing){
+    var key=localStorage.getItem(KEY_SLOT);
+    if(!key)throw new Error('No API key is saved. Reload and enter your Gemini API key.');
+    var system=existing
+      ?'You are editing an existing website. Apply the user request to the entire page. Preserve unrelated content, features, and working interactions. You may change any HTML, CSS, layout, text, or JavaScript needed. Return the complete updated HTML document only, without Markdown fences or explanation. Keep it self-contained.'
+      :'You are a creative web developer. Build a complete, polished, responsive, interactive website from the user request. Return only the complete HTML document, without Markdown fences or explanation. Keep it self-contained.';
+    var userText=existing?'USER CHANGE REQUEST:\\n'+prompt+'\\n\\nCURRENT COMPLETE HTML:\\n'+existing:(prompt||'Surprise me with a creative interactive web experience.');
+    var response=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+MODEL+':generateContent?key='+encodeURIComponent(key),{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({system_instruction:{parts:[{text:system}]},contents:[{role:'user',parts:[{text:userText}]}],generationConfig:{temperature:0.8,maxOutputTokens:8192}})
+    });
+    var data=await response.json().catch(function(){return {};});
+    if(!response.ok)throw new Error('Gemini API error (HTTP '+response.status+'): '+(data&&data.error&&data.error.message||'No details returned.'));
+    var answer=data&&data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts?data.candidates[0].content.parts.map(function(p){return p.text||'';}).join('').trim():'';
+    if(!answer)throw new Error('Gemini returned an empty response. It may have reached an output limit or safety filter.');
+    return answer.replace(/^\`\`\`(?:html)?\\s*/i,'').replace(/\\s*\`\`\`$/,'').trim();
+  }
+  form.addEventListener('submit',async function(event){
+    event.preventDefault();var prompt=input.value.trim();if(!prompt)return;
+    button.disabled=true;button.textContent='Working…';show('Updating the entire page…');
+    try{var result=await ask(prompt,currentHtml());installPage(result);}
+    catch(error){show(error.message,true);button.disabled=false;button.textContent='Update';}
+  });
+}
 
-    <!-- SEO Meta Tags -->
-    <meta name="description"
-        content="Discover something new every time! Random generates unique, interactive web experiences powered by AI. From creative tools to artistic visualizations - explore endless possibilities at random.krishnasingh.live">
-    <meta name="keywords"
-        content="random generator, interactive web app, AI-powered content, creative tools, web experiments, Krishna Singh, generative art, random experiences">
-    <meta name="author" content="Krishna Singh">
-    <meta name="robots" content="index, follow">
-    <meta name="language" content="English">
-
-    <!-- Open Graph Meta Tags for Social Media -->
-    <meta property="og:title" content="Random - Discover Unique Web Experiences">
-    <meta property="og:description"
-        content="AI-powered random web experiences. Discover something new every time you visit random.krishnasingh.live">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://random.krishnasingh.live">
-    <meta property="og:site_name" content="Random by Krishna Singh">
-    <meta property="og:locale" content="en_US">
-
-    <!-- Twitter Card Meta Tags -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Random - Discover Unique Web Experiences">
-    <meta name="twitter:description" content="AI-powered random web experiences. Something new every visit!">
-    <meta name="twitter:creator" content="@krishnasingh">
-
-    <!-- Additional SEO Tags -->
-    <meta name="theme-color" content="#8AB4F8">
-    <meta name="msapplication-TileColor" content="#0A0A2A">
-    <link rel="canonical" href="https://random.krishnasingh.live">
-
-    <!-- Structured Data for Search Engines -->
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "WebApplication",
-        "name": "Random",
-        "description": "AI-powered random web experience generator",
-        "url": "https://random.krishnasingh.live",
-        "author": {
-            "@type": "Person",
-            "name": "Krishna Singh"
-        },
-        "applicationCategory": "Entertainment",
-        "operatingSystem": "Any",
-        "browserRequirements": "Requires JavaScript"
-    }
-    </script>
-
-    <style>
-        :root {
-            --dark-blue: #0A0A2A;
-            --medium-blue: #1A1A4A;
-            --light-blue: #3A3A7A;
-            --text-color-light: #E0E0E0;
-            --text-color-primary: #8AB4F8;
-            /* A vibrant blue for highlights */
-            --glass-border: rgba(255, 255, 255, 0.18);
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --radial-gradient-start: #0f172a;
-            --radial-gradient-end: #050a1b;
-        }
-
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Young Serif', serif;
-            overflow: hidden;
-            /* Hide scrollbars until content is loaded */
-            background: radial-gradient(circle at center, var(--radial-gradient-start) 0%, var(--radial-gradient-end) 100%);
-            min-height: 100vh;
-        }
-
-        /* --- LOADER STYLES --- */
-        #loader {
-            position: fixed;
-            inset: 0;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background-color: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(15px) saturate(180%);
-            -webkit-backdrop-filter: blur(15px) saturate(180%);
-            transition: opacity 0.7s cubic-bezier(0.25, 1, 0.5, 1), visibility 0.7s;
-            opacity: 1;
-            visibility: visible;
-            color: var(--text-color-light);
-            text-shadow: 0 0 10px rgba(138, 180, 248, 0.3);
-        }
-
-        #loader.fade-out {
-            opacity: 0;
-            visibility: hidden;
-        }
-
-        .loading-text {
-            font-family: 'Young Serif', serif;
-            font-size: 3rem;
-            font-weight: 400;
-            margin-bottom: 25px;
-            letter-spacing: 1px;
-            color: var(--text-color-primary);
-        }
-
-        .loading-dots span {
-            display: inline-block;
-            animation: dot-animation 1.5s infinite ease-in-out;
-            opacity: 0;
-            font-size: 3rem;
-            color: var(--text-color-primary);
-        }
-
-        .loading-dots span:nth-child(1) {
-            animation-delay: 0s;
-        }
-
-        .loading-dots span:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .loading-dots span:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
-        @keyframes dot-animation {
-
-            0%,
-            20% {
-                opacity: 0;
-                transform: translateY(0);
-            }
-
-            50% {
-                opacity: 1;
-                transform: translateY(-10px);
-            }
-
-            100% {
-                opacity: 0;
-                transform: translateY(0);
-            }
-        }
-
-        /* --- PROGRESS BAR STYLES --- */
-        .progress-bar-container {
-            width: 80%;
-            max-width: 400px;
-            height: 10px;
-            background-color: var(--glass-bg);
-            border-radius: 10px;
-            border: 1px solid var(--glass-border);
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, var(--text-color-primary), #a7c7fa);
-            border-radius: 10px;
-            transform-origin: left;
-            animation: load-progress 20s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-        }
-
-        @keyframes load-progress {
-            from {
-                transform: scaleX(0);
-            }
-
-            to {
-                transform: scaleX(1);
-            }
-        }
-
-        /* --- API KEY FORM STYLES --- */
-        #api-key-container {
-            display: none;
-            /* Initially hidden */
-            flex-direction: column;
-            align-items: center;
-            width: 90%;
-            max-width: 450px;
-        }
-
-        .api-key-title {
-            font-family: 'Young Serif', serif;
-            font-size: 2rem;
-            font-weight: 400;
-            color: var(--text-color-primary);
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        #api-key-input {
-            width: 100%;
-            padding: 12px 15px;
-            border-radius: 8px;
-            border: 1px solid var(--glass-border);
-            background-color: var(--glass-bg);
-            color: var(--text-color-light);
-            font-family: 'Young Serif', serif;
-            font-size: 1rem;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            outline: none;
-            transition: border-color 0.3s;
-        }
-
-        #api-key-input:focus {
-            border-color: var(--text-color-primary);
-        }
-
-        #save-api-key-btn {
-            padding: 12px 25px;
-            border-radius: 8px;
-            border: none;
-            background-color: var(--text-color-primary);
-            font-family: 'Young Serif', serif;
-            color: var(--dark-blue);
-            font-weight: 700;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.2s, opacity 0.3s;
-        }
-
-        #save-api-key-btn:hover {
-            background-color: #a7c7fa;
-            transform: translateY(-2px);
-        }
-
-        #save-api-key-btn:active {
-            transform: translateY(0);
-        }
-
-        #save-api-key-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        /* --- CONTENT FRAME --- */
-        #content-frame {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            border: none;
-            opacity: 0;
-            transition: opacity 0.7s cubic-bezier(0.25, 1, 0.5, 1) 0.3s;
-        }
-
-        #content-frame.visible {
-            opacity: 1;
-        }
-
-        /* --- ERROR MESSAGE --- */
-        #error-message,
-        #api-key-error {
-            color: #f87171;
-            text-align: center;
-            max-width: 80%;
-            margin-top: 15px;
-        }
-
-        #error-message {
-            font-size: 1.2rem;
-            display: none;
-            /* Hidden by default */
-        }
-
-        #api-key-error {
-            font-size: 0.9rem;
-            height: 20px;
-            /* Reserve space to prevent layout shift */
-        }
-
-        .loading-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-    </style>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Lora:ital,wght@0,400..700;1,400..700&family=Young+Serif&display=swap"
-        rel="stylesheet">
-</head>
-
-<body>
-
-    <div id="loader">
-        <div class="loading-content">
-            <div class="loading-text">
-                Loading
-            </div>
-            <div class="progress-bar-container">
-                <div class="progress-bar"></div>
-            </div>
-        </div>
-
-        <div id="api-key-container">
-            <h2 class="api-key-title">Enter Your Gemini API Key</h2>
-            <input type="password" id="api-key-input" placeholder="Paste your API key here">
-            <button id="save-api-key-btn">Save & Continue</button>
-            <p id="api-key-error"></p>
-        </div>
-
-        <div id="error-message"></div>
-    </div>
-
-    <iframe id="content-frame" title="Generated Content"></iframe>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- UI ELEMENTS ---
-            const loader = document.getElementById('loader');
-            const loadingContent = document.querySelector('.loading-content');
-            const apiKeyContainer = document.getElementById('api-key-container');
-            const apiKeyInput = document.getElementById('api-key-input');
-            const saveApiKeyBtn = document.getElementById('save-api-key-btn');
-            const apiKeyError = document.getElementById('api-key-error');
-            const contentFrame = document.getElementById('content-frame');
-            const generalErrorMessage = document.getElementById('error-message');
-            const progressBar = document.querySelector('.progress-bar');
-
-            // --- PROMPT FOR GEMINI ---
-            const PROMPT = `
-You are a visionary web developer and digital artist with expertise in creating wildly diverse, interactive experiences.
-Your mission is to generate a completely unique, self-contained HTML file that surprises and delights users with unexpected creativity.
-
-**VARIETY MANDATE - Choose ONE random category:**
-🎨 **Generative Art**: Particle systems, fractals, animated patterns, interactive canvas art, procedural landscapes, color harmonies, geometric animations
-🛠️ **Utility Tools**: Password generators, color palette creators, text manipulators, unit converters, QR code generators, markdown editors, JSON formatters
-🎮 **Mini Games**: Snake, Tetris, memory games, word puzzles, typing tests, reaction time games, riddles, trivia, simple RPG elements
-📊 **Data Visualizations**: Chart generators, progress trackers, habit builders, expense calculators, BMI tools, tip calculators, loan calculators
-🌟 **Interactive Experiences**: Virtual pet, mood tracker, daily affirmations, fortune teller, personality quiz, story generator, poem creator
-🎵 **Audio/Visual**: Beat maker, color mixer, sound visualizer, metronome, piano keyboard, drum machine, ambient sound generator
-🔬 **Educational**: Periodic table, math visualizers, physics simulations, language learning tools, coding challenges, brain teasers
-🌍 **Lifestyle**: Recipe finder, workout generator, meditation timer, plant care guide, weather dashboard, time zone converter
-🎭 **Creative Writing**: Story prompts, character generators, plot twist creators, haiku generators, mad libs, writing challenges
-🔮 **Experimental**: Glitch art generators, ASCII art creators, pixel art tools, code poetry, digital zen gardens, abstract interfaces
-
-**Core Requirements:**
-1. **Single File**: All HTML, CSS, and JavaScript in one file. No external dependencies except fonts.
-2. **Extreme Variety**: Each generation should feel completely different. Vary themes, color schemes, layouts, interactions, and purposes dramatically.
-3. **Rich Interactivity**: Include meaningful user interactions - clicks, drags, inputs, animations, real-time updates.
-4. **Visual Polish**: Use gradients, shadows, animations, hover effects, and modern CSS techniques for visual appeal.
-5. **Typography**: MUST use 'Lora' and 'Young Serif' fonts via: <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Young+Serif&display=swap" rel="stylesheet">
-6. **Mobile Responsive**: Perfect on all screen sizes with touch-friendly interactions.
-7. **Color Diversity**: Use varied color palettes - pastels, neons, earth tones, monochrome, gradients, dark themes, light themes.
-8. **Layout Innovation**: Experiment with grid layouts, flexbox, absolute positioning, creative navigation, unique UI patterns.
-
-**Inspiration Sources**: 
-- Behance design trends, CodePen experiments, modern web apps, mobile game UIs, data visualization libraries, generative art platforms, productivity tools, creative coding projects.
-
-**Output Format:**
-- Provide ONLY the raw HTML code
-- Start directly with \`<!DOCTYPE html>\`
-- No explanations, comments, or markdown formatting
-- Ensure the code is complete and functional
-`;
-
-            // --- MAIN LOGIC ---
-            const savedApiKey = localStorage.getItem('geminiApiKey');
-
-            if (savedApiKey) {
-                generatePage(savedApiKey);
-            } else {
-                promptForApiKey();
-            }
-
-            // --- FUNCTIONS ---
-            function promptForApiKey() {
-                loadingContent.style.display = 'none';
-                apiKeyContainer.style.display = 'flex';
-
-                saveApiKeyBtn.addEventListener('click', async () => {
-                    const key = apiKeyInput.value;
-                    if (!key) {
-                        apiKeyError.textContent = 'Please enter an API key.';
-                        return;
-                    }
-
-                    // Save exactly what the user entered. The first real request
-                    // will report authentication or API errors if the key fails.
-                    localStorage.setItem('geminiApiKey', key);
-                    apiKeyError.textContent = '';
-                    saveApiKeyBtn.textContent = 'Starting...';
-                    saveApiKeyBtn.disabled = true;
-                    apiKeyContainer.style.display = 'none';
-                    loadingContent.style.display = 'flex';
-                    generatePage(key);
-                });
-            }
-
-            async function generatePage(apiKey) {
-                const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`;
-
-                try {
-                    const payload = { contents: [{ parts: [{ text: PROMPT.trim() }] }] };
-                    const response = await fetch(GEMINI_API_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    const data = await response.json().catch(() => ({}));
-                    if (!response.ok) {
-                        const apiMessage = data?.error?.message || data?.message || 'No details were provided by the API.';
-                        throw new Error(`Gemini API error (HTTP ${response.status}): ${apiMessage}`);
-                    }
-                    let htmlContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-                    if (!htmlContent) {
-                        throw new Error("Received an empty response from the API.");
-                    }
-
-                    htmlContent = htmlContent.replace(/^```html\s*|```$/g, '').trim();
-                    contentFrame.srcdoc = htmlContent;
-
-                    progressBar.style.animation = 'none';
-                    progressBar.style.transform = 'scaleX(1)';
-
-                    contentFrame.onload = () => {
-                        setTimeout(() => {
-                            loader.classList.add('fade-out');
-                            contentFrame.classList.add('visible');
-                            document.body.style.overflow = 'auto';
-                        }, 100);
-                    };
-
-                } catch (error) {
-                    console.error('Failed to generate page:', error);
-                    loadingContent.style.display = 'none';
-                    generalErrorMessage.textContent = `Error: ${error.message}`;
-                    generalErrorMessage.style.display = 'block';
-                }
-            }
-        });
-    </script>
-</body>
-
-</html>
+function setStatus(message,error){status.textContent=message||'';status.classList.toggle('error',!!error);}
+function cleanHtml(value){return value.replace(/^\`\`\`(?:html)?\\s*/i,'').replace(/\\s*\`\`\`$/,'').trim();}
+function installPage(html){
+  var bar='<div id="random-ai-status" role="status" aria-live="polite"></div><form id="random-ai-bar"><input id="random-ai-input" autocomplete="off" placeholder="Describe anything you want to change…" aria-label="Describe a change"><button id="random-ai-submit" type="submit">Update</button></form>';
+  var style='<style id="random-ai-style">#random-ai-bar{position:fixed!important;z-index:2147483647!important;left:50%!important;bottom:20px!important;transform:translateX(-50%)!important;width:min(760px,calc(100vw - 28px))!important;display:flex!important;gap:9px!important;align-items:center!important;padding:10px!important;border:1px solid rgba(180,200,255,.2)!important;border-radius:18px!important;background:rgba(10,16,32,.91)!important;box-shadow:0 12px 50px #0006!important;backdrop-filter:blur(22px)!important;color:#eef3ff!important;font:500 14px Inter,system-ui,sans-serif!important}#random-ai-bar input{flex:1!important;min-width:0!important;border:0!important;outline:0!important;background:transparent!important;color:inherit!important;font:inherit!important;padding:12px 10px!important}#random-ai-bar input::placeholder{color:#aab5ca!important}#random-ai-bar button{border:0!important;border-radius:12px!important;padding:11px 17px!important;background:#a8c7ff!important;color:#101a31!important;font:700 13px Inter,system-ui,sans-serif!important;cursor:pointer!important}#random-ai-bar button:disabled{opacity:.55!important;cursor:wait!important}#random-ai-status{position:fixed!important;z-index:2147483646!important;left:50%!important;bottom:89px!important;transform:translateX(-50%)!important;max-width:calc(100vw - 28px)!important;padding:8px 13px!important;border:1px solid #b4c8ff26!important;border-radius:10px!important;background:#0a1020e8!important;color:#d5e0f5!important;font:12px Inter,system-ui,sans-serif!important;text-align:center!important}#random-ai-status:empty{display:none!important}#random-ai-status.error{color:#ffaaaa!important}@media(max-width:520px){#random-ai-bar{bottom:12px!important;gap:5px!important}#random-ai-bar button{padding:11px 13px!important}}body{padding-bottom:90px!important}</style>';
+  var output=html.trim();
+  if(/<\\/body\\s*>/i.test(output))output=output.replace(/<\\/body\\s*>/i,bar+style+'</body>');else output+=bar+style;
+  var runtimeTag='<script id="random-ai-runtime">('+pageRuntime.toString()+')();<'+'/script>';
+  if(/<\\/html\\s*>/i.test(output))output=output.replace(/<\\/html\\s*>/i,runtimeTag+'</html>');else output+=runtimeTag;
+  localStorage.setItem(PAGE_SLOT,html.trim());
+  document.open();document.write(output);document.close();
+}
+async function createPage(prompt){
+  var key=localStorage.getItem(KEY_SLOT),system='You are a creative web developer. Build a complete, polished, responsive, interactive website from the user request. Return only the complete HTML document, without Markdown fences or explanation. Keep it self-contained.';
+  var response=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+MODEL+':generateContent?key='+encodeURIComponent(key),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system_instruction:{parts:[{text:system}]},contents:[{role:'user',parts:[{text:prompt||'Surprise me with a creative interactive web experience.'}]}],generationConfig:{temperature:0.8,maxOutputTokens:8192}})});
+  var data=await response.json().catch(function(){return {};});
+  if(!response.ok)throw new Error('Gemini API error (HTTP '+response.status+'): '+(data&&data.error&&data.error.message||'No details returned.'));
+  var answer=data&&data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts?data.candidates[0]..content.parts.map(function(p){return p.text||'';}).join('').trim():'';
+  if(!answer)throw new Error('Gemini returned an empty response.');
+  return cleanHtml(answer);
+}
+form.addEventListener('submit',async function(event){
+  event.preventDefault();var value=input.value;if(!value)return;
+  if(!localStorage.getItem(KEY_SLOT)){
+    localStorage.setItem(KEY_SLOT,value);input.value='';input.placeholder='Describe the page you want to create…';button.textContent='Generate';setStatus('API key saved locally. Now describe what you want to build.');return;
+  }
+  button.disabled=true;button.textContent='Working…';setStatus('Creating your page…');
+  try{var html=await createPage(value);installPage(html);}
+  catch(error){setStatus(error.message,true);button.disabled=false;button.textContent='Generate';}
+});
+var saved=localStorage.getItem(PAGE_SLOT),key=localStorage.getItem(KEY_SLOT);
+if(saved){installPage(saved);}
+else if(!key){input.placeholder='Paste your Gemini API key to start…';button.textContent='Save key';setStatus('Paste your Gemini API key into this bar. It will be saved in this browser only.');}
+else{input.placeholder='Describe the page you want to create…';button.textContent='Generate';setStatus('Your key is saved. Describe a page to create.');}
+})();
+</script></body></html>
